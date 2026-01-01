@@ -11,7 +11,7 @@ void randomize(bool *color, int *direction, int *orientation) {
     *orientation = rand() & 0b11;
 }
 
-bool check_input(int input, bool color, int direction, int orientation, int *score, int *goodness, int *badness) {
+bool check_input(int input, bool color, int direction, int orientation, int *score, int *attempts, int *goodness, int *badness) {
     bool result = false;
     if (color) {
         if (input == direction) {
@@ -28,6 +28,7 @@ bool check_input(int input, bool color, int direction, int orientation, int *sco
     } else {
         *badness = 15;
     }
+    *attempts += 1;
     return result;
 }
 
@@ -37,18 +38,18 @@ int main(void) {
 
     const int speed = 10;
 
-    srand(time(0));
+    srand(time(NULL));
     bool color = (rand() & 0b1) == 0; // effectively rand % 2
-    // int direction = rand() & 0b11; // where it is moving
-    int direction = 3;
-    // int orientation = rand() & 0b11; // where it is facing
-    int orientation = 3;
-    int x = 0;
+    int direction = rand() & 0b11; // where it is moving
+    int orientation = rand() & 0b11; // where it is facing
+    int x = 1920/10;
     int y = 0;
 
     int score = 0;
+    int attempts = 0;
     int goodness = 0;
     int badness = 0;
+    bool playing = false;
 
     Image greenup = LoadImage("assets/greenleaf.png");
     Image greenright = LoadImage("assets/greenleaf.png");
@@ -76,6 +77,8 @@ int main(void) {
     textures[6] = LoadTextureFromImage(orangedown);
     textures[7] = LoadTextureFromImage(orangeleft);
 
+    uint32_t start;
+
     while (!WindowShouldClose()) {
         switch (direction) {
             case 0:
@@ -96,33 +99,65 @@ int main(void) {
         x %= 1920 / 4;
         y %= 1080 / 5;
 
-        if (IsKeyPressed(KEY_UP)) { check_input(0, color, direction, orientation, &score, & goodness, &badness); randomize(&color, &direction, &orientation);  }
-        if (IsKeyPressed(KEY_RIGHT)) { check_input(1, color, direction, orientation, &score, & goodness, &badness); randomize(&color, &direction, &orientation);  }
-        if (IsKeyPressed(KEY_DOWN)) { check_input(2, color, direction, orientation, &score, & goodness, &badness); randomize(&color, &direction, &orientation);  }
-        if (IsKeyPressed(KEY_LEFT)) { check_input(3, color, direction, orientation, &score, & goodness, &badness); randomize(&color, &direction, &orientation);  }
-
         Color bgcolor = (Color) {0, 30, 90, 255};
+        Color tint = WHITE;
 
-        if (goodness > 0) {
-           bgcolor.g += goodness * 5;
-           goodness--;
+        if (!playing) {
+            bgcolor = (Color) {0, 15, 45, 255};
+            tint = GRAY;
+            if (IsKeyPressed(KEY_ENTER)) {
+                score = 0;
+                attempts = 0;
+                start = time(NULL);
+                randomize(&color, &direction, &orientation);
+                playing = true;
+            }
         }
-        if (badness > 0) {
-           bgcolor.r += badness * 10;
-           badness--;
+        else {
+            if (IsKeyPressed(KEY_UP)) { check_input(0, color, direction, orientation, &score, &attempts, &goodness, &badness); randomize(&color, &direction, &orientation);  }
+            if (IsKeyPressed(KEY_RIGHT)) { check_input(1, color, direction, orientation, &score, &attempts, &goodness, &badness); randomize(&color, &direction, &orientation);  }
+            if (IsKeyPressed(KEY_DOWN)) { check_input(2, color, direction, orientation, &score, &attempts, &goodness, &badness); randomize(&color, &direction, &orientation);  }
+            if (IsKeyPressed(KEY_LEFT)) { check_input(3, color, direction, orientation, &score, &attempts, &goodness, &badness); randomize(&color, &direction, &orientation);  }
+            if (goodness > 0) {
+               bgcolor.g += goodness * 5;
+               goodness--;
+            }
+            if (badness > 0) {
+               bgcolor.r += badness * 10;
+               badness--;
+            }
         }
+
+        int timeleft = 30 - time(NULL) + start;
+        if (timeleft <= 0) {
+            playing = false;
+        }
+
 
         BeginDrawing();
 
         ClearBackground(bgcolor);
 
+        if (playing) DrawText(TextFormat("%01d", timeleft), 900, 490, 100, GRAY);
+
         for (int i = 0; i < 56; i++) {
             int ix = x + (i % 7 - 1) * 1920 / 4;
             int iy = y + (i / 7 - 1) * 1080 / 5;
-            DrawTexture(textures[orientation + color * 4], ix, iy, WHITE);
+            DrawTexture(textures[orientation + color * 4], ix, iy, tint);
         }
 
-        DrawText(TextFormat("Score: %i", score), 10, 10, 60, WHITE);
+        if (!playing) {
+            DrawText("How to Play:", 810, 400, 40, WHITE);
+            DrawText("If the leaves are green, press the arrow keys in the direction they're pointing.\nIf the leaves are orange, press the arrow keys in the direction they're moving.", 520, 460, 20, WHITE);
+            DrawText("Score the most points you can in 30 seconds. Good Luck!", 620, 505, 20, WHITE);
+            DrawText("Press Enter to Continue", 810, 525, 20, LIGHTGRAY);
+            if (score != 0) {
+                DrawText(TextFormat("You got %d!", score), 850, 560, 30, WHITE);
+                DrawText(TextFormat("Accuracy: %.1f%%", (100. * score) / attempts), 850, 595, 20, LIGHTGRAY);
+            }
+        } else {
+            DrawText(TextFormat("Score: %i", score), 10, 10, 60, WHITE);
+        }
 
         EndDrawing();
     }
