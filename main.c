@@ -47,6 +47,7 @@ int main(void) {
 
     int score = 0;
     int attempts = 0;
+    int highscore = 0;
     int goodness = 0;
     int badness = 0;
     bool playing = false;
@@ -131,7 +132,8 @@ int main(void) {
         int timeleft = 30 - time(NULL) + start;
         if (timeleft <= 0) {
             playing = false;
-        }
+            if (score > highscore) highscore = score;
+         }
 
 
         BeginDrawing();
@@ -152,8 +154,9 @@ int main(void) {
             DrawText("Score the most points you can in 30 seconds. Good Luck!", 620, 505, 20, WHITE);
             DrawText("Press Enter to Continue", 810, 530, 20, LIGHTGRAY);
             if (score != 0) {
-                DrawText(TextFormat("You got %d!", score), 850, 560, 30, WHITE);
-                DrawText(TextFormat("Accuracy: %.1f%%", (100. * score) / attempts), 850, 595, 20, LIGHTGRAY);
+                DrawText(TextFormat("You got %d!", score), 850, 570, 30, WHITE);
+                DrawText(TextFormat("Accuracy: %.1f%%", (100. * score) / attempts), 850, 610, 20, LIGHTGRAY);
+                DrawText(TextFormat("High score: %d", highscore), 860, 635, 20, LIGHTGRAY);
             }
         } else {
             DrawText(TextFormat("Score: %i", score), 10, 10, 60, WHITE);
