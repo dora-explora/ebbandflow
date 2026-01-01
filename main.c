@@ -33,6 +33,8 @@ bool check_input(int input, bool color, int direction, int orientation, int *sco
 }
 
 int main(void) {
+    SetTraceLogLevel(LOG_WARNING);
+
     InitWindow(1920, 1080, "Ebb and Flow");
     SetTargetFPS(60);
 
@@ -52,14 +54,14 @@ int main(void) {
     int badness = 0;
     bool playing = false;
 
-    Image greenup = LoadImage("assets/greenleaf.png");
-    Image greenright = LoadImage("assets/greenleaf.png");
-    Image greendown = LoadImage("assets/greenleaf.png");
-    Image greenleft = LoadImage("assets/greenleaf.png");
-    Image orangeup = LoadImage("assets/orangeleaf.png");
-    Image orangeright = LoadImage("assets/orangeleaf.png");
-    Image orangedown = LoadImage("assets/orangeleaf.png");
-    Image orangeleft = LoadImage("assets/orangeleaf.png");
+    Image greenup = LoadImage("./assets/greenleaf.png");
+    Image greenright = LoadImage("./assets/greenleaf.png");
+    Image greendown = LoadImage("./assets/greenleaf.png");
+    Image greenleft = LoadImage("./assets/greenleaf.png");
+    Image orangeup = LoadImage("./assets/orangeleaf.png");
+    Image orangeright = LoadImage("./assets/orangeleaf.png");
+    Image orangedown = LoadImage("./assets/orangeleaf.png");
+    Image orangeleft = LoadImage("./assets/orangeleaf.png");
 
     ImageRotate(&greenright, 90);
     ImageRotate(&greendown, 180);
